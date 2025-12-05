@@ -8,6 +8,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static com.alextim.glagol.service.MessageParser.parse;
+
 public class CanService {
 
     private MessageReceiver transfer;
@@ -23,7 +25,12 @@ public class CanService {
     private void processQueuedMessages() {
         SomeMessage message;
         while ((message = transfer.getNextMessage()) != null) {
-            logReceivedMessage(message);
+            System.out.println("====================================");
+            SomeMessage parsed = parse(message);
+
+            logReceivedMessage(parsed);
+            System.out.println();
+            System.out.println();
         }
     }
 
