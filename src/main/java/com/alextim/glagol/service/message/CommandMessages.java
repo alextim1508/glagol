@@ -2,9 +2,9 @@ package com.alextim.glagol.service.message;
 
 import com.alextim.glagol.client.SomeMessage;
 import com.alextim.glagol.service.protocol.AddressInfo;
+import com.alextim.glagol.service.protocol.Command;
 import com.alextim.glagol.service.protocol.CommandStatus;
 import com.alextim.glagol.service.protocol.Parameter;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
@@ -18,12 +18,11 @@ import static com.alextim.glagol.service.protocol.MessageCategory.CONTROL;
 public class CommandMessages {
 
     @Slf4j
-    @Getter
     public static class RestartCommand extends CommandMessage {
 
         public RestartCommand() {
             super(createId(new AddressInfo(CONTROL, true, ALL_DEVICES, 0)),
-                    createDataBytes());
+                    createDataBytes(), RESTART);
         }
 
         private static byte[] createDataBytes() {
@@ -47,14 +46,13 @@ public class CommandMessages {
     }
 
     @Slf4j
-    @Getter
     public static class GetParamCommand extends CommandMessage {
 
         public final Parameter param;
 
         public GetParamCommand(Parameter param) {
             super(createId(new AddressInfo(CONTROL, true, ALL_DEVICES, 0)),
-                    createDataBytes(param));
+                    createDataBytes(param), GET_PARAM);
             this.param = param;
         }
 
@@ -79,14 +77,13 @@ public class CommandMessages {
     }
 
     @Slf4j
-    @Getter
     public static class GetParamAnswer extends AnswerMessage {
 
         public final Parameter param;
         public final Number value;
 
         public GetParamAnswer(SomeMessage baseMsg) {
-            super(baseMsg.id, baseMsg.data, baseMsg.time);
+            super(baseMsg.id, baseMsg.data, baseMsg.time, GET_PARAM);
 
             this.param = Parameter.fromCode(baseMsg.data[2]);
             log.debug("Param: {}", param);
@@ -113,7 +110,6 @@ public class CommandMessages {
     }
 
     @Slf4j
-    @Getter
     public static class SetParamCommand extends CommandMessage {
 
         public final Parameter param;
@@ -121,7 +117,7 @@ public class CommandMessages {
 
         public SetParamCommand(Parameter param, Number value) {
             super(createId(new AddressInfo(CONTROL, true, ALL_DEVICES, 0)),
-                    createDataBytes(param, value));
+                    createDataBytes(param, value), SET_PARAM);
             this.param = param;
             this.value = value;
         }
@@ -156,14 +152,13 @@ public class CommandMessages {
     }
 
     @Slf4j
-    @Getter
     public static class SetParamAnswer extends AnswerMessage {
 
         public final Parameter param;
         public final Number value;
 
         public SetParamAnswer(SomeMessage baseMsg) {
-            super(baseMsg.id, baseMsg.data, baseMsg.time);
+            super(baseMsg.id, baseMsg.data, baseMsg.time, SET_PARAM);
 
             this.param = Parameter.fromCode(baseMsg.data[2]);
             log.debug("Param: {}", param);
@@ -190,12 +185,11 @@ public class CommandMessages {
     }
 
     @Slf4j
-    @Getter
     public static class StartMeasureCommand extends CommandMessage {
 
         public StartMeasureCommand() {
             super(createId(new AddressInfo(CONTROL, true, ALL_DEVICES, 0)),
-                    createDataBytes());
+                    createDataBytes(), START_MEASURE);
         }
 
         private static byte[] createDataBytes() {
@@ -219,11 +213,10 @@ public class CommandMessages {
     }
 
     @Slf4j
-    @Getter
     public static class StartMeasureAnswer extends AnswerMessage {
 
         public StartMeasureAnswer(SomeMessage baseMsg) {
-            super(baseMsg.id, baseMsg.data, baseMsg.time);
+            super(baseMsg.id, baseMsg.data, baseMsg.time, START_MEASURE);
         }
 
         @Override
@@ -233,12 +226,11 @@ public class CommandMessages {
     }
 
     @Slf4j
-    @Getter
     public static class StopMeasureCommand extends CommandMessage {
 
         public StopMeasureCommand() {
             super(createId(new AddressInfo(CONTROL, true, ALL_DEVICES, 0)),
-                    createDataBytes());
+                    createDataBytes(), STOP_MEASURE);
         }
 
         private static byte[] createDataBytes() {
@@ -262,11 +254,10 @@ public class CommandMessages {
     }
 
     @Slf4j
-    @Getter
     public static class StopMeasureAnswer extends AnswerMessage {
 
         public StopMeasureAnswer(SomeMessage baseMsg) {
-            super(baseMsg.id, baseMsg.data, baseMsg.time);
+            super(baseMsg.id, baseMsg.data, baseMsg.time, STOP_MEASURE);
         }
 
         @Override
@@ -276,21 +267,28 @@ public class CommandMessages {
     }
 
     @Slf4j
-    @Getter
     public static class AnswerMessage extends SomeMessage {
 
-        private final CommandStatus commandStatus;
+        public final Command command;
+        public final CommandStatus commandStatus;
 
-        public AnswerMessage(int id, byte[] data, long time) {
+        public AnswerMessage(int id, byte[] data, long time, Command command) {
             super(id, data, time);
+            this.command = command;
             this.commandStatus = CommandStatus.fromCode(data[1]);
-            log.debug("Execution Status: {}", commandStatus);
+            log.debug("Command: {},  Execution Status: {}", command, commandStatus);
         }
     }
 
+    @Slf4j
     public static class CommandMessage extends SomeMessage {
-        public CommandMessage(int id, byte[] data) {
+
+        public final Command command;
+
+        public CommandMessage(int id, byte[] data, Command command) {
             super(id, data, 0);
+            this.command = command;
+            log.debug("Command: {}", command);
         }
     }
 }

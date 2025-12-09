@@ -8,6 +8,7 @@ import com.alextim.glagol.service.message.ProcessingMessages.ProcessingErrorMess
 import com.alextim.glagol.service.message.ProcessingMessages.UnknownMessage;
 import com.alextim.glagol.service.protocol.AddressInfo;
 import com.alextim.glagol.service.protocol.Command;
+import com.alextim.glagol.service.protocol.MeasurementMessageType;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.alextim.glagol.client.SomeMessage.formatDataAsHex;
@@ -64,12 +65,13 @@ public class MessageParser {
         };
     }
 
+
     private static SomeMessage parseMeasurementMessage(SomeMessage originalMsg) {
-        return switch (++measMsgCounter) {
-            case 1 -> new MeasurementHeader(originalMsg);
-            case 2 -> new MeasurementCounts(originalMsg);
-            case 3 -> new MeasurementDoseRate(originalMsg);
-            default -> new UnknownMessage(originalMsg);
+        MeasurementMessageType messageType = MeasurementMessageType.fromSequenceNumber(++measMsgCounter);
+        return switch (messageType) {
+            case HEADER -> new MeasurementHeader(originalMsg);
+            case COUNTS -> new MeasurementCounts(originalMsg);
+            case DOSE_RATE -> new MeasurementDoseRate(originalMsg);
         };
     }
 }

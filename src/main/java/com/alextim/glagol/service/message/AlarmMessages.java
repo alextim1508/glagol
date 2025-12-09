@@ -1,7 +1,7 @@
 package com.alextim.glagol.service.message;
 
 import com.alextim.glagol.client.SomeMessage;
-import lombok.Getter;
+import com.alextim.glagol.service.protocol.Command;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.alextim.glagol.service.protocol.Command.RESTART;
@@ -9,13 +9,12 @@ import static com.alextim.glagol.service.protocol.Command.RESTART;
 public class AlarmMessages {
 
     @Slf4j
-    @Getter
     public static class RestartAlarm extends AlarmEvent {
 
-        private final int deviceNumber;
+        public final int deviceNumber;
 
         public RestartAlarm(SomeMessage baseMsg) {
-            super(baseMsg.id, baseMsg.data, baseMsg.time);
+            super(baseMsg.id, baseMsg.data, baseMsg.time, RESTART);
             deviceNumber = baseMsg.id & 0x1F;
             log.debug("Device number: {}", deviceNumber);
         }
@@ -26,9 +25,15 @@ public class AlarmMessages {
         }
     }
 
+    @Slf4j
     public static class AlarmEvent extends SomeMessage {
-        public AlarmEvent(int id, byte[] data, long time) {
+
+        public final Command command;
+
+        public AlarmEvent(int id, byte[] data, long time, Command command) {
             super(id, data, time);
+            this.command = command;
+            log.debug("Command: {}", command);
         }
     }
 }

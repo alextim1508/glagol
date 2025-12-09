@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static com.alextim.glagol.client.SomeMessage.formatDataAsHex;
 import static com.alextim.glagol.client.ucan.CanDriver.*;
 import static com.alextim.glagol.client.ucan.CanInitializationConfig.createInitParam;
 import static com.alextim.glagol.client.ucan.constant.CanBaudRate.USBCAN_BAUD_125kBit;
@@ -64,9 +65,9 @@ public class CanTransfer implements MessageReceiver {
             }
 
             throw new RuntimeException(
-                    "Failed to initialize hardware: " + initHwResult.getValue() +
+                    "Failed to initialize hardware: " + initHwResult +
                             (initCanResult.isSuccess() ? ". Hardware deinitialized successfully" :
-                                    ". Failed to deinitialize hardware: " + initCanResult.getValue()));
+                                    ". Failed to deinitialize hardware: " + initCanResult));
         }
 
         ucanHandler = new NativeLong(handleRef.getValue());
@@ -84,11 +85,11 @@ public class CanTransfer implements MessageReceiver {
             }
 
             throw new RuntimeException(
-                    "Failed to initialize CAN interface: " + initCanResult.getValue() +
+                    "Failed to initialize CAN interface: " + initCanResult +
                             (deinitCanResult.isSuccess() ? ". CAN interface deinitialized successfully" :
-                                    ". Failed to deinitialize CAN interface: " + deinitCanResult.getValue()) +
+                                    ". Failed to deinitialize CAN interface: " + deinitCanResult) +
                             (deinitHwResult.isSuccess() ? ", Hardware deinitialized successfully" :
-                                    ", Failed to deinitialize hardware: " + deinitHwResult.getValue()));
+                                    ", Failed to deinitialize hardware: " + deinitHwResult));
         }
 
         messagePoller.scheduleAtFixedRate(this::pollCanMessages, 0, POLL_PERIOD_MS, TimeUnit.MILLISECONDS);
@@ -101,7 +102,7 @@ public class CanTransfer implements MessageReceiver {
         UsbCanError resetCanResult = resetCan(ucanHandler);
         if (!resetCanResult.isSuccess()) {
             throw new RuntimeException(
-                    "Failed to reset CAN interface: " + resetCanResult.getValue());
+                    "Failed to reset CAN interface: " + resetCanResult);
         }
 
         log.info("CAN interface reset successfully");
@@ -136,7 +137,9 @@ public class CanTransfer implements MessageReceiver {
         log.info("Writing CAN message: {}", someMessage);
 
         CanMsg canMsg = new CanMsg(someMessage);
-        log.debug("Converted to internal CAN structure: {}", canMsg);
+        log.debug(String.format("id=0x%04X, data=[%s]", canMsg.m_dwID, formatDataAsHex(canMsg.m_bData)));
+
+        canMsg.write();
 
         UsbCanError result = writeCanMsg(ucanHandler, canMsg);
         if (!result.isSuccess()) {
@@ -198,18 +201,10 @@ public class CanTransfer implements MessageReceiver {
         log.debug("Connect control event: {}, param: {}", event, param);
 
         switch (canEvent) {
-            case USBCAN_EVENT_CONNECT:
-                log.info("Event: New USB-CAN module connected");
-                break;
-            case USBCAN_EVENT_DISCONNECT:
-                log.info("Event: USB-CAN module disconnected");
-                break;
-            case USBCAN_EVENT_FATALDISCON:
-                log.warn("Event: Used USB-CAN module disconnected, data loss possible");
-                break;
-            default:
-                log.warn("Event: Unknown connect control event: {}", event);
-                break;
+            case USBCAN_EVENT_CONNECT -> log.info("Event: New USB-CAN module connected");
+            case USBCAN_EVENT_DISCONNECT -> log.info("Event: USB-CAN module disconnected");
+            case USBCAN_EVENT_FATALDISCON -> log.warn("Event: Used USB-CAN module disconnected, data loss possible");
+            default -> log.warn("Event: Unknown connect control event: {}", event);
         }
     }
 
