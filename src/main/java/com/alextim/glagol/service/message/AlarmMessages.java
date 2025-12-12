@@ -9,11 +9,11 @@ import static com.alextim.glagol.service.protocol.Command.RESTART;
 public class AlarmMessages {
 
     @Slf4j
-    public static class RestartAlarm extends AlarmEvent {
+    public static class Alarm extends AlarmEvent {
 
         public final int deviceNumber;
 
-        public RestartAlarm(SomeMessage baseMsg) {
+        public Alarm(SomeMessage baseMsg) {
             super(baseMsg.id, baseMsg.data, baseMsg.time, RESTART);
             deviceNumber = baseMsg.id & 0x1F;
             log.debug("Device number: {}", deviceNumber);
@@ -21,7 +21,7 @@ public class AlarmMessages {
 
         @Override
         public String toString() {
-            return RESTART.getDescription();
+            return "Unknown alarm";
         }
     }
 

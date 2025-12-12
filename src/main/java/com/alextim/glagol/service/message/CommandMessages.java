@@ -46,6 +46,21 @@ public class CommandMessages {
     }
 
     @Slf4j
+    public static class RestartAnswer extends AnswerMessage {
+
+        public RestartAnswer(SomeMessage baseMsg) {
+            super(baseMsg.id, baseMsg.data, baseMsg.time, RESTART);
+        }
+
+        @Override
+        public String toString() {
+            return RESTART.getDescription();
+        }
+    }
+
+
+
+    @Slf4j
     public static class GetParamCommand extends CommandMessage {
 
         public final Parameter param;

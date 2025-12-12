@@ -1,7 +1,7 @@
 package com.alextim.glagol.service;
 
 import com.alextim.glagol.client.SomeMessage;
-import com.alextim.glagol.service.message.AlarmMessages.RestartAlarm;
+import com.alextim.glagol.service.message.AlarmMessages.Alarm;
 import com.alextim.glagol.service.message.MeasurementMessages.MeasurementHeader;
 import com.alextim.glagol.service.message.MeasurementMessages.MeasurementCounts;
 import com.alextim.glagol.service.message.ProcessingMessages.ProcessingErrorMessage;
@@ -40,13 +40,7 @@ public class MessageParser {
     }
 
     private static SomeMessage parseAlarmMessage(SomeMessage originalMsg) {
-        Command cmd = Command.fromCode(originalMsg.data[0]);
-        log.debug("Alarm command: {}", cmd);
-
-        if (cmd == Command.RESTART) {
-            return new RestartAlarm(originalMsg);
-        }
-        return new UnknownMessage(originalMsg);
+        return new Alarm(originalMsg);
     }
 
     private static SomeMessage parseResponseMessage(SomeMessage originalMsg) {
@@ -54,6 +48,7 @@ public class MessageParser {
         log.debug("Response command: {}", cmd);
 
         return switch (cmd) {
+            case RESTART -> new RestartAnswer(originalMsg);
             case START_MEASURE -> {
                 measMsgCounter = 0;
                 yield new StartMeasureAnswer(originalMsg);
@@ -61,7 +56,6 @@ public class MessageParser {
             case STOP_MEASURE -> new StopMeasureAnswer(originalMsg);
             case GET_PARAM -> new GetParamAnswer(originalMsg);
             case SET_PARAM -> new SetParamAnswer(originalMsg);
-            default -> new UnknownMessage(originalMsg);
         };
     }
 

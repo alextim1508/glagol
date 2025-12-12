@@ -2,7 +2,6 @@ package com.alextim.glagol.service.message;
 
 import com.alextim.glagol.client.SomeMessage;
 import com.alextim.glagol.service.protocol.MeasurementMessageType;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
@@ -41,8 +40,8 @@ public class MeasurementMessages {
 
         @Override
         public String toString() {
-            return String.format("%s. Диапазон=%d, Время накопления=%d, Количество счетчиков=%d",
-                    HEADER.getDescription(), currentRange, accumTimeDeciSec, counterCount);
+            return String.format("Диапазон: %d, Время накопления: %d, Количество счетчиков: %d",
+                    currentRange, accumTimeDeciSec, counterCount);
         }
     }
 
@@ -64,13 +63,13 @@ public class MeasurementMessages {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append("Счета=[");
+            sb.append("Счета: [");
             for (int i = 0; i < counts.length; i++) {
                 sb.append(counts[i]);
                 if (i < counts.length - 1) sb.append(", ");
             }
             sb.append("]");
-            return COUNTS.getDescription() + " " + sb;
+            return sb.toString();
         }
     }
 
@@ -95,7 +94,7 @@ public class MeasurementMessages {
 
         @Override
         public String toString() {
-            return String.format("%s Мощность дозы=%.6f", DOSE_RATE.getDescription(), doseRate);
+            return String.format("Мощность дозы: %f", doseRate);
         }
     }
 
