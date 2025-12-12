@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="pane" prefHeight="476.0" prefWidth="1348.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.alextim.glagol.frontend.view.magazine.MagazineController">
+   <children>
+      <TableView fx:id="table" layoutX="30.0" layoutY="26.0" prefHeight="200.0" prefWidth="853.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+        <columns>
+            <TableColumn fx:id="id" prefWidth="75.0" text="ID" />
+          <TableColumn fx:id="time" prefWidth="75.0" text="Время" />
+          <TableColumn fx:id="type" prefWidth="75.0" text="Тип" />
+            <TableColumn fx:id="comEvAns" prefWidth="135.0" text="Команда&#10;Событие" />
+            <TableColumn fx:id="message" prefWidth="646.0" text="Сообщение" />
+            <TableColumn fx:id="data" prefWidth="290.0" text="Данные" />
+        </columns>
+      </TableView>
+   </children>
+</AnchorPane>
