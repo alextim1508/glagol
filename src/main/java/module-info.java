@@ -15,6 +15,7 @@ module com.alextim.glagol {
     opens com.alextim.glagol.frontend.view.data to javafx.fxml;
     opens com.alextim.glagol.frontend.view.management to javafx.fxml;
     opens com.alextim.glagol.frontend.view.magazine to javafx.fxml;
+    opens com.alextim.glagol.frontend.view.metrology to javafx.fxml;
     opens com.alextim.glagol.frontend.dialog.progress to javafx.fxml;
     opens com.alextim.glagol.frontend.dialog.error to javafx.fxml;
 

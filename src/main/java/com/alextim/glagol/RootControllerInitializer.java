@@ -9,6 +9,8 @@ import com.alextim.glagol.frontend.view.NodeController;
 import com.alextim.glagol.frontend.view.data.DataController;
 import com.alextim.glagol.frontend.view.magazine.MagazineController;
 import com.alextim.glagol.frontend.view.management.ManagementController;
+import com.alextim.glagol.frontend.view.metrology.MetrologyController;
+import com.alextim.glagol.service.MetrologyMeasService;
 import com.alextim.glagol.service.StatisticMeasService;
 import com.alextim.glagol.service.message.CommandMessages.CommandMessage;
 import lombok.Getter;
@@ -33,6 +35,8 @@ public class RootControllerInitializer {
     protected final MessageReceiver transfer;
 
     protected final StatisticMeasService statisticMeasService;
+
+    protected final MetrologyMeasService metrologyMeasService;
 
     protected final AppState appState;
 
@@ -71,4 +75,7 @@ public class RootControllerInitializer {
         return (MagazineController) getChild(MagazineController.class.getSimpleName());
     }
 
+    protected MetrologyController getMetrologyController() {
+        return (MetrologyController) getChild(MetrologyController.class.getSimpleName());
+    }
 }

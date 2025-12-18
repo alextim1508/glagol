@@ -112,7 +112,7 @@ public abstract class ManagementControllerInitializer extends NodeController {
     public void setParam(Parameter parameter, float value) {
         Platform.runLater(() -> {
             log.debug("Setting parameter {} to value {}", parameter, value);
-            String formattedValue = DECIMAL_FORMATTER.format(value); // Форматируем значение с помощью DecimalFormat
+            String formattedValue = DECIMAL_FORMATTER.format(value);
             log.debug("Formatted parameter {} value to: {}", parameter, formattedValue);
 
             if (parameter == BD_BG_SI29G_COEFF_1) {

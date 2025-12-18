@@ -1,9 +1,7 @@
 package com.alextim.glagol;
 
-import com.alextim.glagol.client.ucan.CanTransfer;
-import com.alextim.glagol.context.AppState;
+import com.alextim.glagol.context.Context;
 import com.alextim.glagol.frontend.MainWindow;
-import com.alextim.glagol.service.StatisticMeasService;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -11,8 +9,6 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
 
 import static com.alextim.glagol.context.Property.TITLE_APP;
 
@@ -31,30 +27,47 @@ public class Main extends Application {
 
         MainWindow mainWindow = new MainWindow(stage);
 
-        AppState appState = new AppState(new File(System.getProperty("user.dir") + "/AppParams.txt"));
-
-        CanTransfer canTransfer = new CanTransfer();
-
-        StatisticMeasService statisticMeasService = new StatisticMeasService();
-
-        RootController rootController = new RootController(
-                mainWindow,
-                canTransfer,
-                statisticMeasService,
-                appState);
+        StartController startController = showStartWindow(stage);
 
         Thread thread = new Thread(() -> {
+            RootController rootController = null;
+            try {
+                Platform.runLater(() -> {
+                    startController.addLog("Создание контекста" + System.lineSeparator());
+                });
+                rootController = new Context(mainWindow).getRootController();
+            } catch (Exception e) {
+                log.error("", e);
+                Platform.runLater(() -> {
+                    startController.setHeader("Ошибка инициализации");
+                    startController.addLog(e.getMessage());
+                });
+            }
+
+            if (rootController == null)
+                return;
+
+            RootController finalRootController = rootController;
             Platform.runLater(() -> {
-                AnchorPane mainWindowPane = mainWindow.createMainWindow(rootController);
+                startController.addLog("Создание графического окна" + System.lineSeparator());
+                AnchorPane mainWindowPane = mainWindow.createMainWindow(finalRootController);
+                startController.addLog("OK");
 
                 initStage(stage,
                         mainWindowPane,
                         mainWindow.getIconImage(),
-                        rootController);
+                        finalRootController);
             });
         });
         thread.setDaemon(true);
         thread.start();
+    }
+
+    private static StartController showStartWindow(Stage stage) {
+        StartController startController = new StartController();
+        stage.setScene(new Scene(startController.getStartPane("Инициализация")));
+        stage.show();
+        return startController;
     }
 
     private void initStage(Stage stage,

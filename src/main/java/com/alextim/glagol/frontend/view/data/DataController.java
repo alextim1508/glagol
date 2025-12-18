@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import static com.alextim.glagol.context.Property.*;
+import static com.alextim.glagol.service.StatisticMeasService.ACCUM_MEAS_DATA_UNIT;
 import static com.alextim.glagol.service.StatisticMeasService.MEAS_DATA_UNIT;
 
 
@@ -47,6 +48,11 @@ public class DataController extends DataControllerInitializer {
                 .toString();
         log.info("Formatted average dose rate: {}", formattedAverageDoseRate);
 
+        log.info("Accumulated dose rate: {}", meas.accumulatedDoseRateInTime);
+        String formattedAccumulatedDoseRateInTime = new ValueFormatter(
+                Math.abs(meas.accumulatedDoseRateInTime), ACCUM_MEAS_DATA_UNIT, MEAS_DATA_NUMBER_SING_DIGITS)
+                .toString();
+        log.info("Formatted accumulated dose rate: {}", formattedAccumulatedDoseRateInTime);
 
         currentDoseRateGraph.addPoint(graphIndex, timestamp, meas.currentDoseRate,
                 String.format(Locale.US, CURRENT_GRAPH_LABEL_FORMAT, formattedCurrentDoseRate,
@@ -67,7 +73,8 @@ public class DataController extends DataControllerInitializer {
         updateTable(meas);
 
         setDoseRates((meas.currentDoseRate < 0 ? "-" : "") + formattedCurrentDoseRate,
-                (meas.averageDoseRate < 0 ? "-" : "") + formattedAverageDoseRate);
+                (meas.averageDoseRate < 0 ? "-" : "") + formattedAverageDoseRate,
+                (meas.accumulatedDoseRateInTime < 0 ? "-" : "") + formattedAccumulatedDoseRateInTime);
 
         setMeasTime(meas.accumulatedInterval + " сек");
 

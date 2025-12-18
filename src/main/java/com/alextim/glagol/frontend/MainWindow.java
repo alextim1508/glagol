@@ -6,6 +6,7 @@ import com.alextim.glagol.frontend.dialog.progress.ProgressDialog;
 import com.alextim.glagol.frontend.view.data.DataView;
 import com.alextim.glagol.frontend.view.magazine.MagazineView;
 import com.alextim.glagol.frontend.view.management.ManagementView;
+import com.alextim.glagol.frontend.view.metrology.MetrologyView;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Alert;
@@ -73,6 +74,7 @@ public class MainWindow {
 
         TabPane tabPane = new TabPane(
                 new Tab("Данные", new DataView().getView(bundle)),
+                new Tab("Метрология", new MetrologyView().getView(bundle)),
                 new Tab("Журнал", new MagazineView().getView(bundle)),
                 new Tab("Параметры", new ManagementView().getView(bundle))
         );

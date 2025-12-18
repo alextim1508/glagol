@@ -45,7 +45,7 @@ public abstract class DataControllerInitializer extends NodeController {
     private TextField measTime;
 
     @FXML
-    private Label currentDoseRate, averageDoseRate;
+    private Label currentDoseRate, averageDoseRate, accumulatedDoseRate;
     @FXML
     private Label currentMeasTime;
 
@@ -309,11 +309,13 @@ public abstract class DataControllerInitializer extends NodeController {
         return fileComment.getText();
     }
 
-    public void setDoseRates(String currentDoseRate, String averageDoseRate) {
-        log.info("Dose rates show. CurrentDoseRate: {} AverageDoseRate: {}", currentDoseRate, averageDoseRate);
+    public void setDoseRates(String currentDoseRate, String averageDoseRate, String accumulatedDoseRate) {
+        log.info("Dose rates show. CurrentDoseRate: {} AverageDoseRate: {} AccumulatedDoseRate: {}",
+                currentDoseRate, averageDoseRate, accumulatedDoseRate);
         Platform.runLater(() -> {
             this.currentDoseRate.setText(currentDoseRate);
             this.averageDoseRate.setText(averageDoseRate);
+            this.accumulatedDoseRate.setText(accumulatedDoseRate);
         });
     }
 

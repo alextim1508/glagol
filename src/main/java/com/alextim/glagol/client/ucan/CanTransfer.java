@@ -201,10 +201,18 @@ public class CanTransfer implements MessageReceiver {
         log.debug("Connect control event: {}, param: {}", event, param);
 
         switch (canEvent) {
-            case USBCAN_EVENT_CONNECT -> log.info("Event: New USB-CAN module connected");
-            case USBCAN_EVENT_DISCONNECT -> log.info("Event: USB-CAN module disconnected");
-            case USBCAN_EVENT_FATALDISCON -> log.warn("Event: Used USB-CAN module disconnected, data loss possible");
-            default -> log.warn("Event: Unknown connect control event: {}", event);
+            case USBCAN_EVENT_CONNECT:
+                log.info("Event: New USB-CAN module connected");
+                break;
+            case USBCAN_EVENT_DISCONNECT:
+                log.info("Event: USB-CAN module disconnected");
+                break;
+            case USBCAN_EVENT_FATALDISCON:
+                log.warn("Event: Used USB-CAN module disconnected, data loss possible");
+                break;
+            default:
+                log.warn("Event: Unknown connect control event: {}", event);
+                break;
         }
     }
 

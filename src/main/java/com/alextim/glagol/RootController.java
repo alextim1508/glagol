@@ -7,10 +7,15 @@ import com.alextim.glagol.frontend.MainWindow;
 import com.alextim.glagol.frontend.view.data.DataController;
 import com.alextim.glagol.frontend.view.magazine.MagazineController;
 import com.alextim.glagol.frontend.view.management.ManagementController;
+import com.alextim.glagol.frontend.view.metrology.MetrologyController;
+import com.alextim.glagol.service.MetrologyMeasService;
+import com.alextim.glagol.service.MetrologyMeasService.MetrologyMeasurement;
 import com.alextim.glagol.service.StatisticMeasService;
 import com.alextim.glagol.service.StatisticMeasService.StatisticMeasurement;
 import com.alextim.glagol.service.message.CommandMessages.*;
+import com.alextim.glagol.service.message.MeasurementMessages;
 import com.alextim.glagol.service.message.MeasurementMessages.MeasEvent;
+import com.alextim.glagol.service.message.MeasurementMessages.MeasurementDoseRate;
 import com.alextim.glagol.service.protocol.Parameter;
 import javafx.scene.input.KeyEvent;
 import lombok.SneakyThrows;
@@ -35,8 +40,9 @@ public class RootController extends RootControllerInitializer {
     public RootController(MainWindow mainWindow,
                           MessageReceiver transfer,
                           StatisticMeasService statisticMeasService,
+                          MetrologyMeasService metrologyMeasService,
                           AppState appState) {
-        super(mainWindow, transfer, statisticMeasService, appState);
+        super(mainWindow, transfer, statisticMeasService, metrologyMeasService, appState);
     }
 
     public void listenDetectorClient() {
@@ -54,7 +60,7 @@ public class RootController extends RootControllerInitializer {
 
         while ((message = transfer.getNextMessage()) != null) {
             SomeMessage parsed = parse(message);
-            log.info("DetectorMsg: {}" + System.lineSeparator() + "{}", parsed.getClass().getSimpleName(), parsed);
+            log.info("DetectorMsg: {} : {}", parsed.getClass().getSimpleName(), parsed);
 
             lastReceivedMsgTime.set(System.currentTimeMillis());
 
@@ -75,8 +81,6 @@ public class RootController extends RootControllerInitializer {
                     log.error("handleAnswerMessage exception", e);
                 }
             }
-
-
         }
     }
 
@@ -123,6 +127,19 @@ public class RootController extends RootControllerInitializer {
                 connectTimer.cancel(true);
             }
         }
+
+        if(measEvent instanceof MeasurementDoseRate measurementDoseRate) {
+            Optional<MetrologyMeasurement> metrologyMeasurement = metrologyMeasService.addMeasToMetrology(measurementDoseRate);
+
+            if (metrologyMeasurement.isPresent()) {
+                MetrologyController metrologyController = getMetrologyController();
+                metrologyController.showMetrologyMeas(metrologyMeasurement.get());
+
+                if (!metrologyMeasService.isRun()) {
+                    sendDetectorCommand(new StopMeasureCommand());
+                }
+            }
+        }
     }
 
     public void sendDetectorCommand(List<? extends CommandMessage> command) {
@@ -136,7 +153,6 @@ public class RootController extends RootControllerInitializer {
 
         transfer.writeMsg(command);
     }
-
 
     @SneakyThrows
     public void startMeasurement(long measTime, int range) {
@@ -180,6 +196,13 @@ public class RootController extends RootControllerInitializer {
         dataController.enableStartStopBtn(true);
     }
 
+    public void startMetrology(int cycleAmount, int measAmount, float realMeasData) {
+        sendDetectorCommand(Arrays.asList(new SetParamCommand(BD_BG_CURRENT_RANGE, 0),
+                new StartMeasureCommand()));
+
+        metrologyMeasService.run(cycleAmount, measAmount, realMeasData);
+    }
+
     public void clear() {
         detectorMsgs.clear();
         statisticMeasService.clear();
@@ -188,13 +211,19 @@ public class RootController extends RootControllerInitializer {
         dataController.clearGraphAndTableData();
     }
 
-
     public void onKeyEvent(KeyEvent event) {
     }
 
     public void close() {
         try {
             getDataController().putStateParam();
+            appState.saveParam();
+        } catch (Exception e) {
+            log.error("SaveParams error", e);
+        }
+
+        try {
+            getMetrologyController().putStateParam();
             appState.saveParam();
         } catch (Exception e) {
             log.error("SaveParams error", e);
@@ -215,4 +244,6 @@ public class RootController extends RootControllerInitializer {
 
     public void saveMeasurements(File file, String fileComment) {
     }
+
+
 }

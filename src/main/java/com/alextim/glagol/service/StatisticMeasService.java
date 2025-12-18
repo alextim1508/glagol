@@ -1,6 +1,5 @@
 package com.alextim.glagol.service;
 
-
 import com.alextim.glagol.service.message.MeasurementMessages.MeasEvent;
 import com.alextim.glagol.service.message.MeasurementMessages.MeasurementCounts;
 import com.alextim.glagol.service.message.MeasurementMessages.MeasurementDoseRate;
@@ -11,16 +10,16 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 import java.util.*;
 
-
 @Slf4j
 public class StatisticMeasService {
 
     public static String MEAS_DATA_UNIT = "Зв/ч";
+    public static String ACCUM_MEAS_DATA_UNIT = "Зв";
 
     private int count;
     private long measAmount;
 
-    private float averageDoseRate;
+    private float averageDoseRate, accumulatedDoseRate;
 
     private final float[] averageCounts = new float[5];
 
@@ -42,6 +41,9 @@ public class StatisticMeasService {
         Arrays.fill(averageCounts, 0);
         Arrays.fill(accumulatedCounts, 0);
         measEvents.clear();
+
+        accumulatedDoseRate = 0;
+        averageDoseRate = 0;
     }
 
     public static class StatisticMeasurement {
@@ -54,7 +56,7 @@ public class StatisticMeasService {
 
         public int counterCount;
 
-        public float currentDoseRate, averageDoseRate;
+        public float currentDoseRate, averageDoseRate, accumulatedDoseRateInTime;
 
         public long accumulatedInterval;
 
@@ -67,14 +69,13 @@ public class StatisticMeasService {
 
 
     public Optional<StatisticMeasurement> addMeasToStatistic(MeasEvent measEvent) {
-        System.out.println("run = " + run);
         if (!run)
             return Optional.empty();
 
         measEvents.put(measEvent.getClass().getSimpleName(), measEvent);
 
         if (measEvents.size() > 2) {
-            if (measEvents.containsKey(MeasurementHeader.class.getSimpleName()) &&
+            if (    measEvents.containsKey(MeasurementHeader.class.getSimpleName()) &&
                     measEvents.containsKey(MeasurementCounts.class.getSimpleName()) &&
                     measEvents.containsKey(MeasurementDoseRate.class.getSimpleName())) {
 
@@ -123,14 +124,18 @@ public class StatisticMeasService {
 
 
                 log.info("Raw current dose rate: {}", measurementDoseRate.doseRate);
-                statMeas.currentDoseRate = fromMillis(measurementDoseRate.doseRate);
+                statMeas.currentDoseRate = fromMicros(measurementDoseRate.doseRate);
                 log.info("Current dose rate: {}", statMeas.currentDoseRate);
 
 
                 averageDoseRate = initAverage(measurementDoseRate.doseRate, averageDoseRate, count + 1);
 
-                statMeas.averageDoseRate = fromMillis(averageDoseRate);
+                statMeas.averageDoseRate = fromMicros(averageDoseRate);
                 log.info("Average dose rate: {}", statMeas.averageDoseRate);
+
+                accumulatedDoseRate += statMeas.currentDoseRate;
+                statMeas.accumulatedDoseRateInTime = ( count + 1) * accumulatedDoseRate;
+                log.info("Accumulated dose rate: {}", statMeas.accumulatedDoseRateInTime);
 
                 statMeas.progress = 1.0f * (count + 1) / measAmount;
 
@@ -149,15 +154,15 @@ public class StatisticMeasService {
         return Optional.empty();
     }
 
-    private float fromMillis(float value) {
-        return value / 1000;
+    private float fromMicros(float value) {
+        return value / 1_000_000;
     }
 
-    public long initAccumulated(int cur, long accumulated) {
+    private long initAccumulated(int cur, long accumulated) {
         return cur + accumulated;
     }
 
-    public float initAverage(float cur, float average, int count) {
+    private float initAverage(float cur, float average, int count) {
         log.debug("initAverage: Current value: {} Average value {} Count: {}", cur, average, count);
 
         if (count == 0)

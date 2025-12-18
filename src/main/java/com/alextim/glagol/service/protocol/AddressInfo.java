@@ -19,10 +19,11 @@ public class AddressInfo {
     }
 
     public static int createId(AddressInfo addressInfo) {
-        return ((addressInfo.getCategory().getCode() & 0x3) << 9) |
-                ((addressInfo.isBD() ? 1 : 0) << 8) |
-                ((addressInfo.getDeviceType().getCode() & 0x7) << 5) |
-                (addressInfo.getDeviceNumber() & 0x1F);
+        return 0x321;
+//        return ((addressInfo.getCategory().getCode() & 0x3) << 9) |
+//                ((addressInfo.isBD() ? 1 : 0) << 8) |
+//                ((addressInfo.getDeviceType().getCode() & 0x7) << 5) |
+//                (addressInfo.getDeviceNumber() & 0x1F);
     }
 
     public static AddressInfo parseAddress(int canId) {
