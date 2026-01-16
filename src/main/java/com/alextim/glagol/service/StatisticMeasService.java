@@ -8,7 +8,10 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 public class StatisticMeasService {
@@ -133,8 +136,9 @@ public class StatisticMeasService {
                 statMeas.averageDoseRate = fromMicros(averageDoseRate);
                 log.info("Average dose rate: {}", statMeas.averageDoseRate);
 
-                accumulatedDoseRate += statMeas.currentDoseRate;
-                statMeas.accumulatedDoseRateInTime = ( count + 1) * accumulatedDoseRate;
+                final int secondsInHour = 3600;
+                accumulatedDoseRate += statMeas.currentDoseRate / secondsInHour;
+                statMeas.accumulatedDoseRateInTime = accumulatedDoseRate;
                 log.info("Accumulated dose rate: {}", statMeas.accumulatedDoseRateInTime);
 
                 statMeas.progress = 1.0f * (count + 1) / measAmount;

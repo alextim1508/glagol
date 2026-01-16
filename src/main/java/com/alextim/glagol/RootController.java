@@ -13,7 +13,6 @@ import com.alextim.glagol.service.MetrologyMeasService.MetrologyMeasurement;
 import com.alextim.glagol.service.StatisticMeasService;
 import com.alextim.glagol.service.StatisticMeasService.StatisticMeasurement;
 import com.alextim.glagol.service.message.CommandMessages.*;
-import com.alextim.glagol.service.message.MeasurementMessages;
 import com.alextim.glagol.service.message.MeasurementMessages.MeasEvent;
 import com.alextim.glagol.service.message.MeasurementMessages.MeasurementDoseRate;
 import com.alextim.glagol.service.protocol.Parameter;
@@ -217,12 +216,6 @@ public class RootController extends RootControllerInitializer {
     public void close() {
         try {
             getDataController().putStateParam();
-            appState.saveParam();
-        } catch (Exception e) {
-            log.error("SaveParams error", e);
-        }
-
-        try {
             getMetrologyController().putStateParam();
             appState.saveParam();
         } catch (Exception e) {
