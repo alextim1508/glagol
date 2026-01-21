@@ -44,8 +44,6 @@ public class RootControllerInitializer {
 
     protected final AppState appState;
 
-    protected final ConcurrentLinkedQueue<SomeMessage> detectorMsgs = new ConcurrentLinkedQueue<>();
-
     protected final ConcurrentLinkedQueue<StatisticMeasurement> statisticMsg = new ConcurrentLinkedQueue<>();
 
     protected final LinkedList<CommandMessage> waitingCommands = new LinkedList<>();

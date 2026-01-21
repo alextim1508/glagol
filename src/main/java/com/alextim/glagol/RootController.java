@@ -57,12 +57,6 @@ public class RootController extends RootControllerInitializer {
         messageProcessor.scheduleAtFixedRate(this::processQueuedMessages, 0, 100, TimeUnit.MILLISECONDS);
     }
 
-    private void addDetectorMsg(SomeMessage msg) {
-        detectorMsgs.add(msg);
-        if (detectorMsgs.size() > QUEUE_CAPACITY)
-            detectorMsgs.poll();
-    }
-
     private void addStatisticMsg(StatisticMeasurement msg) {
         statisticMsg.add(msg);
         if (statisticMsg.size() > QUEUE_CAPACITY)
@@ -79,8 +73,6 @@ public class RootController extends RootControllerInitializer {
             lastReceivedMsgTime.set(System.currentTimeMillis());
 
             getMagazineController().addLog(parsed);
-
-            addDetectorMsg(parsed);
 
             if (parsed instanceof MeasEvent measEvent) {
                 try {
@@ -167,7 +159,6 @@ public class RootController extends RootControllerInitializer {
 
     public void sendDetectorCommand(CommandMessage command) {
         getMagazineController().addLog(command);
-        addDetectorMsg(command);
 
         transfer.writeMsg(command);
     }
@@ -224,7 +215,6 @@ public class RootController extends RootControllerInitializer {
     }
 
     public void clear() {
-        detectorMsgs.clear();
         statisticMsg.clear();
         statisticMeasService.clear();
 
