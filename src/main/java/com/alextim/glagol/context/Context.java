@@ -3,6 +3,7 @@ package com.alextim.glagol.context;
 import com.alextim.glagol.RootController;
 import com.alextim.glagol.client.ucan.CanTransfer;
 import com.alextim.glagol.frontend.MainWindow;
+import com.alextim.glagol.service.ExportService;
 import com.alextim.glagol.service.MetrologyMeasService;
 import com.alextim.glagol.service.StatisticMeasService;
 import lombok.Cleanup;
@@ -25,6 +26,7 @@ public class Context {
     private CanTransfer canTransfer;
     private StatisticMeasService statisticMeasService;
     private MetrologyMeasService metrologyMeasService;
+    private ExportService exportService;
     private AppState appState;
 
     public Context(MainWindow mainWindow) {
@@ -99,6 +101,8 @@ public class Context {
         statisticMeasService = new StatisticMeasService();
 
         metrologyMeasService = new MetrologyMeasService();
+
+        exportService = new ExportService();
     }
 
     private void createRootController(MainWindow mainWindow) {
@@ -109,6 +113,7 @@ public class Context {
                 canTransfer,
                 statisticMeasService,
                 metrologyMeasService,
+                exportService,
                 appState);
     }
 }

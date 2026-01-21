@@ -153,6 +153,13 @@ public class MainWindow {
     public File showFileChooseDialog() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File("."));
+
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Текстовые файлы", "*.txt", "*.csv", "*.log")
+        );
+
+        fileChooser.setSelectedExtensionFilter(fileChooser.getExtensionFilters().get(0));
+
         return fileChooser.showSaveDialog(owner);
     }
 

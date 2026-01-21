@@ -10,8 +10,10 @@ import com.alextim.glagol.frontend.view.data.DataController;
 import com.alextim.glagol.frontend.view.magazine.MagazineController;
 import com.alextim.glagol.frontend.view.management.ManagementController;
 import com.alextim.glagol.frontend.view.metrology.MetrologyController;
+import com.alextim.glagol.service.ExportService;
 import com.alextim.glagol.service.MetrologyMeasService;
 import com.alextim.glagol.service.StatisticMeasService;
+import com.alextim.glagol.service.StatisticMeasService.StatisticMeasurement;
 import com.alextim.glagol.service.message.CommandMessages.CommandMessage;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +40,13 @@ public class RootControllerInitializer {
 
     protected final MetrologyMeasService metrologyMeasService;
 
+    protected final ExportService exportService;
+
     protected final AppState appState;
 
     protected final ConcurrentLinkedQueue<SomeMessage> detectorMsgs = new ConcurrentLinkedQueue<>();
+
+    protected final ConcurrentLinkedQueue<StatisticMeasurement> statisticMsg = new ConcurrentLinkedQueue<>();
 
     protected final LinkedList<CommandMessage> waitingCommands = new LinkedList<>();
 

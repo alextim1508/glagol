@@ -4,10 +4,12 @@ import com.alextim.glagol.client.SomeMessage;
 import com.alextim.glagol.client.MessageReceiver;
 import com.alextim.glagol.context.AppState;
 import com.alextim.glagol.frontend.MainWindow;
+import com.alextim.glagol.frontend.dialog.progress.ProgressDialog;
 import com.alextim.glagol.frontend.view.data.DataController;
 import com.alextim.glagol.frontend.view.magazine.MagazineController;
 import com.alextim.glagol.frontend.view.management.ManagementController;
 import com.alextim.glagol.frontend.view.metrology.MetrologyController;
+import com.alextim.glagol.service.ExportService;
 import com.alextim.glagol.service.MetrologyMeasService;
 import com.alextim.glagol.service.MetrologyMeasService.MetrologyMeasurement;
 import com.alextim.glagol.service.StatisticMeasService;
@@ -16,6 +18,12 @@ import com.alextim.glagol.service.message.CommandMessages.*;
 import com.alextim.glagol.service.message.MeasurementMessages.MeasEvent;
 import com.alextim.glagol.service.message.MeasurementMessages.MeasurementDoseRate;
 import com.alextim.glagol.service.protocol.Parameter;
+import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.scene.control.Alert;
 import javafx.scene.input.KeyEvent;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -40,8 +48,9 @@ public class RootController extends RootControllerInitializer {
                           MessageReceiver transfer,
                           StatisticMeasService statisticMeasService,
                           MetrologyMeasService metrologyMeasService,
+                          ExportService exportService,
                           AppState appState) {
-        super(mainWindow, transfer, statisticMeasService, metrologyMeasService, appState);
+        super(mainWindow, transfer, statisticMeasService, metrologyMeasService, exportService, appState);
     }
 
     public void listenDetectorClient() {
@@ -52,6 +61,12 @@ public class RootController extends RootControllerInitializer {
         detectorMsgs.add(msg);
         if (detectorMsgs.size() > QUEUE_CAPACITY)
             detectorMsgs.poll();
+    }
+
+    private void addStatisticMsg(StatisticMeasurement msg) {
+        statisticMsg.add(msg);
+        if (statisticMsg.size() > QUEUE_CAPACITY)
+            statisticMsg.poll();
     }
 
     private void processQueuedMessages() {
@@ -116,8 +131,12 @@ public class RootController extends RootControllerInitializer {
         Optional<StatisticMeasurement> statisticMeasurement = statisticMeasService.addMeasToStatistic(measEvent);
 
         if (statisticMeasurement.isPresent()) {
+            StatisticMeasurement meas = statisticMeasurement.get();
+
             DataController dataController = getDataController();
-            dataController.showStatisticMeas(statisticMeasurement.get());
+            dataController.showStatisticMeas(meas);
+
+            addStatisticMsg(meas);
 
             if (!statisticMeasService.isRun()) {
                 sendDetectorCommand(new StopMeasureCommand());
@@ -127,7 +146,7 @@ public class RootController extends RootControllerInitializer {
             }
         }
 
-        if(measEvent instanceof MeasurementDoseRate measurementDoseRate) {
+        if (measEvent instanceof MeasurementDoseRate measurementDoseRate) {
             Optional<MetrologyMeasurement> metrologyMeasurement = metrologyMeasService.addMeasToMetrology(measurementDoseRate);
 
             if (metrologyMeasurement.isPresent()) {
@@ -156,9 +175,9 @@ public class RootController extends RootControllerInitializer {
     @SneakyThrows
     public void startMeasurement(long measTime, int range) {
         DataController dataController = getDataController();
-        dataController.setGreenCircle();
         dataController.clearGraphAndTableData();
         dataController.enableStartStopBtn(false);
+        dataController.setGreenCircle();
 
         statisticMeasService.run(measTime);
 
@@ -174,6 +193,8 @@ public class RootController extends RootControllerInitializer {
                     long cur = System.currentTimeMillis();
                     if (cur - lastReceivedMsgTime.get() > 5000) {
                         dataController.setRedCircle();
+                    } else {
+                        dataController.setGreenCircle();
                     }
                 } while (!Thread.currentThread().isInterrupted());
                 log.info("timer canceled");
@@ -204,6 +225,7 @@ public class RootController extends RootControllerInitializer {
 
     public void clear() {
         detectorMsgs.clear();
+        statisticMsg.clear();
         statisticMeasService.clear();
 
         DataController dataController = getDataController();
@@ -236,7 +258,40 @@ public class RootController extends RootControllerInitializer {
     }
 
     public void saveMeasurements(File file, String fileComment) {
-    }
+        log.info("export to selected file {}", file);
 
+        DoubleProperty progressProperty = new SimpleDoubleProperty(0.0);
+        StringProperty statusProperty = new SimpleStringProperty("");
+
+        final ProgressDialog progressDialog = mainWindow.showProgressDialog(progressProperty, statusProperty);
+
+        executorService.submit(() -> {
+            try {
+                exportService.exportMeasurements(statisticMsg, fileComment, file, (n, progress) ->
+                        Platform.runLater(() -> {
+                            progressProperty.set(progress);
+                            statusProperty.set("Экспорт измерения " + n);
+                        })
+                );
+
+                Platform.runLater(() -> {
+                    progressDialog.forcefullyHideDialog();
+
+                    mainWindow.showDialog(Alert.AlertType.INFORMATION,
+                            "Экспорт",
+                            "Измерение",
+                            "Измерения экспортированы в файлы");
+                });
+            } catch (Exception e) {
+                log.error("saveMeasurements error", e);
+
+                Platform.runLater(() -> {
+                    progressDialog.forcefullyHideDialog();
+
+                    mainWindow.showError(e);
+                });
+            }
+        });
+    }
 
 }

@@ -29,8 +29,9 @@ public class DataController extends DataControllerInitializer {
         super.initialize(location, resources);
 
         enableStartStopBtn(true);
-    }
 
+        setGrayCircle();
+    }
 
     public void showStatisticMeas(StatisticMeasurement meas) {
         log.info("Show statistic");
