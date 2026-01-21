@@ -14,18 +14,18 @@ import static com.alextim.glagol.service.StatisticMeasService.MEAS_DATA_UNIT;
 @Slf4j
 public class MetrologyMeasService {
 
-    private int count;
-    private int measAmount;
+    int count;
+    int measAmount;
 
-    private int cycleAmount;
+    int cycleAmount;
 
-    private float realMeasData;
-    private float averageDoseRate;
+    float realMeasData;
+    float averageDoseRate;
 
     @Getter
-    private boolean run = false;
+    boolean run = false;
 
-    private final List<Float> aveMeasDataList = new ArrayList<>();
+    final List<Float> aveMeasDataList = new ArrayList<>();
 
     @AllArgsConstructor
     public static class MetrologyMeasurement {
@@ -83,6 +83,11 @@ public class MetrologyMeasService {
 
     private float calcAveTotalMeasData() {
         log.info("calcAveTotalMeasData");
+        if (aveMeasDataList.isEmpty()) {
+            log.info("aveMeasDataList is empty, returning 0.0f");
+            return 0.0f;
+        }
+
         float aveTotalMeasData = 0;
         for (int i = 0; i < aveMeasDataList.size(); i++) {
             aveTotalMeasData += aveMeasDataList.get(i);

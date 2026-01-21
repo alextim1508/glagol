@@ -19,19 +19,19 @@ public class StatisticMeasService {
     public static String MEAS_DATA_UNIT = "Зв/ч";
     public static String ACCUM_MEAS_DATA_UNIT = "Зв";
 
-    private int count;
-    private long measAmount;
+    int count;
+    long measAmount;
 
-    private float averageDoseRate, accumulatedDoseRate;
+    float averageDoseRate, accumulatedDoseRate;
 
-    private final float[] averageCounts = new float[5];
+    final float[] averageCounts = new float[5];
 
     public final long[] accumulatedCounts = new long[5];
 
     @Getter
-    private boolean run = false;
+    boolean run = false;
 
-    private final Map<String, MeasEvent> measEvents = new HashMap<>();
+    final Map<String, MeasEvent> measEvents = new HashMap<>();
 
     public void run(long measAmount) {
         clear();
