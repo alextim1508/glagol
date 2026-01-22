@@ -102,6 +102,6 @@ public class ValueFormatter {
         else if(prefixValue.startsWith("а"))
             return 0.000_000_000_000_000_001;
 
-        throw new RuntimeException("Unknown prefix: " + prefixValue);
+        return 1;
     }
 }

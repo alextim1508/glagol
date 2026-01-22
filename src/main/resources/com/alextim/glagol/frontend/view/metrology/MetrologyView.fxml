@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
@@ -9,55 +10,74 @@
 
 <AnchorPane fx:id="pane" prefHeight="524.0" prefWidth="986.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.alextim.glagol.frontend.view.metrology.MetrologyController">
    <children>
-      <TableView fx:id="table" layoutX="14.0" layoutY="14.0" prefHeight="281.0" prefWidth="381.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+      <TableView fx:id="table" layoutX="14.0" layoutY="14.0" prefHeight="363.0" prefWidth="381.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
          <columns>
             <TableColumn fx:id="numberCycleColumn" prefWidth="112.0" text="Номер цикла" />
             <TableColumn fx:id="aveMeasDataColumn" prefWidth="249.0" text="Среднее значение" />
          </columns>
       </TableView>
-      <VBox layoutX="395.0" layoutY="14.0" prefHeight="281.0" prefWidth="302.0" spacing="20.0" style="-fx-border-color: black;" AnchorPane.leftAnchor="395.0" AnchorPane.topAnchor="5.0">
+      <VBox layoutX="395.0" layoutY="14.0" prefHeight="420.0" prefWidth="415.0" spacing="20.0" style="-fx-border-color: black;" AnchorPane.leftAnchor="395.0" AnchorPane.topAnchor="5.0">
          <children>
             <HBox layoutX="569.0" layoutY="109.0">
                <children>
-                  <Label layoutX="569.0" layoutY="113.0" prefHeight="25.0" prefWidth="238.0" text="Количество циклов: " />
+                  <Label layoutX="569.0" layoutY="113.0" prefHeight="25.0" prefWidth="241.0" text="Количество циклов: " />
                   <TextField fx:id="cycleAmount" layoutX="787.0" layoutY="109.0" prefHeight="25.0" prefWidth="50.0" />
                </children>
             </HBox>
             <HBox layoutX="556.0" layoutY="54.0" prefHeight="26.0" prefWidth="290.0">
                <children>
-                  <Label layoutX="556.0" layoutY="58.0" prefHeight="26.0" prefWidth="240.0" text="Количество измерений одного цикла: " />
+                  <Label layoutX="556.0" layoutY="58.0" prefHeight="26.0" prefWidth="241.0" text="Экспозиция одного цикла, сек: " />
                   <TextField fx:id="measAmount" layoutX="780.0" layoutY="54.0" prefHeight="25.0" prefWidth="50.0" />
                </children>
             </HBox>
-            <HBox prefHeight="25.0" prefWidth="239.0">
+            <HBox prefHeight="25.0" prefWidth="239.0" spacing="10.0">
                <children>
-                  <Label layoutX="569.0" layoutY="113.0" prefHeight="25.0" prefWidth="173.0" text="Действительное значение:" />
-                  <TextField fx:id="realMeasData" layoutX="787.0" layoutY="109.0" prefHeight="25.0" prefWidth="130.0" promptText="значение приставка " />
+                  <Label layoutX="569.0" layoutY="113.0" prefHeight="25.0" prefWidth="156.0" text="Действительное значение:" />
+                  <TextField fx:id="realMeasData" layoutX="787.0" layoutY="109.0" prefHeight="25.0" prefWidth="130.0" />
+                  <ComboBox fx:id="realMeasDataUnit" prefHeight="25.0" prefWidth="90.0" />
+               </children>
+            </HBox>
+            <HBox prefHeight="25.0" prefWidth="215.0" spacing="10.0">
+               <children>
+                  <Label layoutX="87.0" layoutY="463.0" prefHeight="25.0" prefWidth="157.0" text="Фоновое значение:" />
+                  <TextField fx:id="backgroundMeasData" layoutX="146.0" layoutY="459.0" prefHeight="25.0" prefWidth="130.0" />
+                  <ComboBox fx:id="backgroundMeasDataUnit" prefHeight="25.0" prefWidth="90.0" />
+               </children>
+            </HBox>
+            <HBox spacing="10.0">
+               <children>
+                  <Label layoutX="103.0" layoutY="450.0" prefHeight="24.0" prefWidth="57.0" text="Диапазон:" />
+                  <ComboBox fx:id="inputRange" layoutX="181.0" layoutY="446.0" prefHeight="25.0" prefWidth="90.0" />
+               </children>
+            </HBox>
+            <HBox layoutX="576.0" layoutY="173.0" spacing="10.0" />
+            <HBox spacing="10.0">
+               <children>
+                  <Label prefHeight="25.0" prefWidth="92.0" text="Экспозиция, сек:" />
+                  <TextField fx:id="measTime" prefHeight="25.0" prefWidth="50.0" />
+                  <Button fx:id="startBackgroundBtn" mnemonicParsing="false" onAction="#startBackgroundOn" text="Накопить фон" />
+                  <Button fx:id="stopBackgroundBtn" mnemonicParsing="false" onAction="#stopBackgroundOn" text="Остановить" />
                </children>
             </HBox>
             <StackPane>
                <children>
-                  <ProgressBar fx:id="progressBar" layoutX="488.0" layoutY="438.0" prefHeight="23.0" prefWidth="288.0" progress="0.0" />
+                  <ProgressBar fx:id="progressBar" layoutX="488.0" layoutY="438.0" prefHeight="23.0" prefWidth="369.0" progress="0.0" />
                   <Label fx:id="progressLabel" layoutX="587.0" layoutY="413.0" text="-" />
                </children>
             </StackPane>
             <HBox prefHeight="25.0" prefWidth="239.0">
                <children>
-                  <Label layoutX="569.0" layoutY="113.0" prefHeight="25.0" prefWidth="171.0" text="Погрешность, %:" />
+                  <Label layoutX="569.0" layoutY="113.0" prefHeight="25.0" prefWidth="167.0" text="Погрешность, %:" />
                   <TextField fx:id="error" layoutX="787.0" layoutY="109.0" prefHeight="25.0" prefWidth="130.0" />
                </children>
             </HBox>
-            <HBox layoutX="576.0" layoutY="173.0" spacing="10.0">
-               <children>
-                  <Button fx:id="startBtn" layoutX="14.0" layoutY="29.0" mnemonicParsing="false" onAction="#startOn" text="Рассчитать" />
-               </children>
-            </HBox>
+            <Button fx:id="startBtn" mnemonicParsing="false" onAction="#startOn" text="Рассчитать погрешность" />
          </children>
          <padding>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </padding>
       </VBox>
-      <HBox layoutX="32.0" layoutY="354.0" prefHeight="25.0" prefWidth="381.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="300.0">
+      <HBox layoutX="5.0" layoutY="384.0" prefHeight="25.0" prefWidth="381.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="384.0">
          <children>
             <Label layoutX="569.0" layoutY="113.0" prefHeight="25.0" prefWidth="119.0" text="Среднее значение:" />
             <TextField fx:id="aveMeasData" layoutX="787.0" layoutY="109.0" prefHeight="25.0" prefWidth="173.0" />

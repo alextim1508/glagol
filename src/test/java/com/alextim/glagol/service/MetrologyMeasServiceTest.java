@@ -21,7 +21,7 @@ public class MetrologyMeasServiceTest {
 
     @Test
     void testRun() {
-        service.run(3, 2, 10.0f);
+        service.run(3, 2, 10.0f, 0.0f);
 
         assertTrue(service.isRun());
         assertEquals(0, service.count);
@@ -44,7 +44,7 @@ public class MetrologyMeasServiceTest {
 
     @Test
     void testAddMeasToMetrology_SingleMeasurement() {
-        service.run(1, 1, 5.0f);
+        service.run(1, 1, 5.0f, 0.0f);
 
         MeasurementDoseRate msg = createMeasurementDoseRate(5000000.0f); // 5.0 Зв/ч
         Optional<MetrologyMeasurement> result = service.addMeasToMetrology(msg);
@@ -67,7 +67,7 @@ public class MetrologyMeasServiceTest {
 
     @Test
     void testAddMeasToMetrology_MultipleMeasurementsSingleCycle() {
-        service.run(1, 3, 15.0f); // 1 цикл, 3 измерения на цикл, эталон = 15.0
+        service.run(1, 3, 15.0f, 0.0f); // 1 цикл, 3 измерения на цикл, эталон = 15.0
 
         // Отправляем 3 измерения, каждое 10.0 Зв/ч
         MeasurementDoseRate msg1 = createMeasurementDoseRate(10000000.0f); // 10.0 Зв/ч
@@ -105,7 +105,7 @@ public class MetrologyMeasServiceTest {
 
     @Test
     void testAddMeasToMetrology_MultipleCycles() {
-        service.run(2, 2, 10.0f); // 2 цикла, 2 измерения на цикл, эталон = 10.0
+        service.run(2, 2, 10.0f, 0.0f); // 2 цикла, 2 измерения на цикл, эталон = 10.0
 
         // Цикл 1, Изм 1: 9.0 Зв/ч
         Optional<MetrologyMeasurement> r1 = service.addMeasToMetrology(createMeasurementDoseRate(9000000.0f));

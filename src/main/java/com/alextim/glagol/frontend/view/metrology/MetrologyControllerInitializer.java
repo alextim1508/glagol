@@ -1,6 +1,7 @@
 package com.alextim.glagol.frontend.view.metrology;
 
 import com.alextim.glagol.frontend.view.NodeController;
+import com.alextim.glagol.service.protocol.Range;
 import com.alextim.glagol.service.util.ValueFormatter;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -11,6 +12,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.util.StringConverter;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,8 +25,7 @@ import static com.alextim.glagol.context.Property.MEAS_DATA_NUMBER_SING_DIGITS;
 import static com.alextim.glagol.frontend.MainWindow.PROGRESS_BAR_COLOR;
 import static com.alextim.glagol.frontend.view.management.ManagementControllerInitializer.ERROR_PARSE_FILED;
 import static com.alextim.glagol.frontend.view.management.ManagementControllerInitializer.ERROR_PARSE_TITLE;
-import static com.alextim.glagol.service.util.ValueFormatter.parsingValuePrefix;
-import static com.alextim.glagol.service.util.ValueFormatter.sigDigRounder;
+import static com.alextim.glagol.service.util.ValueFormatter.*;
 import static javafx.scene.control.Alert.AlertType.ERROR;
 
 @Slf4j
@@ -32,19 +33,40 @@ public abstract class MetrologyControllerInitializer extends NodeController {
 
     private final String CYCLE_AMOUNT_STATE_APP_PARAM = "metrology.cycleAmount";
     private final String MEAS_AMOUNT_STATE_APP_PARAM = "metrology.measAmount";
+    private final String RANGE_STATE_APP_PARAM = "metrology.range";
     private final String REAL_MEAS_DATA_STATE_APP_PARAM = "metrology.realMeasData";
+    private final String REAL_MEAS_DATA_UNIT_STATE_APP_PARAM = "metrology.realMeasDataUnit";
+    private final String BACKGROUND_MEAS_DATA_STATE_APP_PARAM = "metrology.backgroundMeasData";
+    private final String BACKGROUND_MEAS_DATA_UNIT_STATE_APP_PARAM = "metrology.backgroundMeasDataUnit";
+    private final String BACKGROUND_MEAS_TIME_STATE_APP_PARAM = "metrology.backgroundMeasTime";
 
     @FXML
     private AnchorPane pane;
+
 
     @FXML
     private TextField cycleAmount;
     @FXML
     private TextField measAmount;
+
+    @FXML
+    private ComboBox<Range> inputRange;
+
     @FXML
     private TextField realMeasData;
     @FXML
+    private ComboBox<String> realMeasDataUnit;
+
+    @FXML
+    private TextField backgroundMeasData;
+    @FXML
+    private ComboBox<String> backgroundMeasDataUnit;
+
+    @FXML
     private TextField error;
+
+    @FXML
+    private TextField measTime;
 
     @FXML
     private Label progressLabel;
@@ -62,7 +84,7 @@ public abstract class MetrologyControllerInitializer extends NodeController {
     private TextField aveMeasData;
 
     @FXML
-    private Button startBtn;
+    private Button startBtn, startBackgroundBtn, stopBackgroundBtn;
 
     @AllArgsConstructor
     public static class TableRow {
@@ -76,6 +98,8 @@ public abstract class MetrologyControllerInitializer extends NodeController {
         super.initialize(location, resources);
 
         paneInit();
+        inputRangeInit();
+        initUnitsInit();
         initTable();
         initProgressBar();
         initMetrologyFields();
@@ -84,6 +108,43 @@ public abstract class MetrologyControllerInitializer extends NodeController {
     private void paneInit() {
         /* Bug JavaFX. Other tabs of tabPane get ScrollEvent from current tab */
         pane.addEventHandler(ScrollEvent.ANY, Event::consume);
+    }
+
+    private void inputRangeInit() {
+        inputRange.setItems(FXCollections.observableArrayList(Range.values()));
+        inputRange.getSelectionModel().select(Range.AUTO);
+        inputRange.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Range object) {
+                if (object != null)
+                    return object.getDescription();
+                return "";
+            }
+
+            @Override
+            public Range fromString(String string) {
+                return inputRange.getItems().stream().filter(r ->
+                        r.getDescription().equals(string)).findFirst().orElse(null);
+            }
+        });
+    }
+
+    protected Range getInputRange() {
+        return inputRange.getSelectionModel().getSelectedItem();
+    }
+
+    private void initUnitsInit() {
+        ObservableList<String> units = FXCollections.observableArrayList(
+                "Зв/ч",
+                "мЗв/ч",
+                "мкЗв/ч",
+                "нЗв/ч"
+        );
+
+        realMeasDataUnit.setItems(units);
+        realMeasDataUnit.getSelectionModel().select(2);
+        backgroundMeasDataUnit.setItems(units);
+        backgroundMeasDataUnit.getSelectionModel().select(2);
     }
 
     private void initTable() {
@@ -118,6 +179,26 @@ public abstract class MetrologyControllerInitializer extends NodeController {
         if (param != null) {
             realMeasData.setText(param);
         }
+        param = rootController.getAppState().getParam(REAL_MEAS_DATA_UNIT_STATE_APP_PARAM);
+        if (param != null) {
+            realMeasDataUnit.getSelectionModel().select(Integer.parseInt(param));
+        }
+        param = rootController.getAppState().getParam(BACKGROUND_MEAS_DATA_STATE_APP_PARAM);
+        if (param != null) {
+            backgroundMeasData.setText(param);
+        }
+        param = rootController.getAppState().getParam(BACKGROUND_MEAS_DATA_UNIT_STATE_APP_PARAM);
+        if (param != null) {
+            backgroundMeasDataUnit.getSelectionModel().select(Integer.parseInt(param));
+        }
+        param = rootController.getAppState().getParam(RANGE_STATE_APP_PARAM);
+        if (param != null) {
+            inputRange.getSelectionModel().select(Integer.parseInt(param));
+        }
+        param = rootController.getAppState().getParam(BACKGROUND_MEAS_TIME_STATE_APP_PARAM);
+        if (param != null) {
+            measTime.setText(param);
+        }
     }
 
     @Override
@@ -150,6 +231,18 @@ public abstract class MetrologyControllerInitializer extends NodeController {
                             unit,
                             MEAS_DATA_NUMBER_SING_DIGITS).toString());
 
+        }
+    }
+
+    public void setBackground(float aveDoseRate, String unit) {
+        if (Float.isNaN(aveDoseRate) || Float.isInfinite(aveDoseRate)) {
+            backgroundMeasData.setText("-");
+        } else {
+            String selectedItem = backgroundMeasDataUnit.getSelectionModel().getSelectedItem();
+            double coef = parsingValuePrefix(selectedItem);
+            double signedBackground = sigDigRounder(aveDoseRate / coef, MEAS_DATA_NUMBER_SING_DIGITS);
+
+            backgroundMeasData.setText(String.valueOf(signedBackground));
         }
     }
 
@@ -190,40 +283,75 @@ public abstract class MetrologyControllerInitializer extends NodeController {
             return;
         }
 
+        String selectedItem = realMeasDataUnit.getSelectionModel().getSelectedItem();
+        double coef = parsingValuePrefix(selectedItem);
+
         float realMeasData;
         try {
-            String[] split = this.realMeasData.getText().split(" ");
-            log.debug("realMeasData split: {}", split);
-
-            float value = Float.parseFloat(split[0]);
-            log.debug("value: {}", value);
-
-            double prefix = 1;
-            if (split.length == 2) {
-                String prefixTitle = split[1].trim();
-                log.debug("prefixTitle: {}", prefixTitle);
-                if (!prefixTitle.isEmpty())
-                    prefix = parsingValuePrefix(prefixTitle);
-            }
-            log.info("prefix: {}", prefix);
-
-            realMeasData = (float) (value * prefix);
-            log.info(String.format("realMeasData: %f", realMeasData));
-
+            realMeasData = Float.parseFloat(this.realMeasData.getText());
         } catch (Exception e) {
-            log.error("startMetrology realMeasData parsing", e);
-            showParsingErrorDialog(
-                    "Действительное значение",
-                    "Ошибка преобразования текста в число c приставкой системы СИ" + System.lineSeparator() +
-                            e.getMessage() + System.lineSeparator() +
-                            "Пример корректных строк: 1.3 мк, 1.2 м, 1.1, 1.0 К и тд");
+            log.error("startMetrology measAmount parsing", e);
+            showParsingErrorDialog("Действительное значение");
+            return;
+        }
+        log.info(String.format("realMeasData: %f", realMeasData));
+
+        float realMeasDataInBaseUnit = (float) (realMeasData * coef);
+        log.info(String.format("realMeasDataInBaseUnit: %f", realMeasDataInBaseUnit));
+
+        selectedItem = backgroundMeasDataUnit.getSelectionModel().getSelectedItem();
+        coef = parsingValuePrefix(selectedItem);
+
+        float backgroundMeasData = 0.0f;
+        if (!this.backgroundMeasData.getText().isEmpty()) {
+            try {
+                backgroundMeasData = Float.parseFloat(this.backgroundMeasData.getText());
+            } catch (Exception e) {
+                log.error("startMetrology measAmount parsing", e);
+                showParsingErrorDialog("Фоновое значение");
+                return;
+            }
+        }
+        log.info(String.format("backgroundMeasData: %f", backgroundMeasData));
+
+        float backgroundMeasDataInBaseUnit = (float) (backgroundMeasData * coef);
+        log.info(String.format("backgroundMeasDataInBaseUnit: %f", backgroundMeasDataInBaseUnit));
+
+        startBackgroundBtn.setDisable(true);
+        startMetrology(cycleAmount, measAmount, realMeasDataInBaseUnit, backgroundMeasDataInBaseUnit, getInputRange().getCode());
+    }
+
+    protected abstract void startMetrology(int cycleAmount, int measAmount, float realMeasData, float background, int range);
+
+    @FXML
+    void startBackgroundOn(ActionEvent event) {
+        log.info("start background");
+
+        int measTime;
+        try {
+            measTime = Integer.parseInt(this.measTime.getText());
+            log.info("measAmount: {}", measAmount);
+        } catch (Exception e) {
+            log.error("startMetrology measAmount parsing", e);
+            showParsingErrorDialog("Экспозиция");
             return;
         }
 
-        startMetrology(cycleAmount, measAmount, realMeasData);
+        startBtn.setDisable(true);
+        startBackground(measTime, getInputRange().getCode());
     }
 
-    protected abstract void startMetrology(int cycleAmount, int measAmount, float realMeasData);
+    protected abstract void startBackground(int measTime, int ramge);
+
+    @FXML
+    void stopBackgroundOn(ActionEvent event) {
+        startBtn.setDisable(false);
+        startBackgroundBtn.setDisable(false);
+
+        stopBackground();
+    }
+
+    protected abstract void stopBackground();
 
     protected void showParsingErrorDialog(String field) {
         rootController.getMainWindow().showDialog(ERROR, "Ошибка",
@@ -241,9 +369,15 @@ public abstract class MetrologyControllerInitializer extends NodeController {
         rootController.getAppState().putParam(CYCLE_AMOUNT_STATE_APP_PARAM, cycleAmount.getText());
         rootController.getAppState().putParam(MEAS_AMOUNT_STATE_APP_PARAM, measAmount.getText());
         rootController.getAppState().putParam(REAL_MEAS_DATA_STATE_APP_PARAM, realMeasData.getText());
+        rootController.getAppState().putParam(REAL_MEAS_DATA_UNIT_STATE_APP_PARAM, String.valueOf(realMeasDataUnit.getSelectionModel().getSelectedIndex()));
+        rootController.getAppState().putParam(BACKGROUND_MEAS_DATA_STATE_APP_PARAM, backgroundMeasData.getText());
+        rootController.getAppState().putParam(BACKGROUND_MEAS_DATA_UNIT_STATE_APP_PARAM, String.valueOf(backgroundMeasDataUnit.getSelectionModel().getSelectedIndex()));
+        rootController.getAppState().putParam(RANGE_STATE_APP_PARAM, String.valueOf(inputRange.getSelectionModel().getSelectedIndex()));
+        rootController.getAppState().putParam(BACKGROUND_MEAS_TIME_STATE_APP_PARAM, measTime.getText());
     }
 
-    public void setDisableAllButtons(boolean b) {
-        startBtn.setDisable(b);
+    public void enableAllBtn() {
+        startBtn.setDisable(false);
+        startBackgroundBtn.setDisable(false);
     }
 }

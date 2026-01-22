@@ -20,6 +20,7 @@ public class MetrologyMeasService {
     int cycleAmount;
 
     float realMeasData;
+    float background;
     float averageDoseRate;
 
     @Getter
@@ -37,12 +38,13 @@ public class MetrologyMeasService {
         public float error;
     }
 
-    public void run(int cycleAmount, int measAmount, float realMeasData) {
+    public void run(int cycleAmount, int measAmount, float realMeasData, float background) {
         run = true;
         this.count = 0;
         this.cycleAmount = cycleAmount;
         this.measAmount = measAmount;
         this.realMeasData = realMeasData;
+        this.background = background;
         aveMeasDataList.clear();
     }
 
@@ -51,7 +53,7 @@ public class MetrologyMeasService {
         if (!run)
             return Optional.empty();
 
-        averageDoseRate = initAverage(fromMicros(msg.doseRate), averageDoseRate, count + 1);
+        averageDoseRate = initAverage(fromMicros(msg.doseRate) - background, averageDoseRate, count + 1);
 
         /* Проверка, что следующее измерение - измерение нового цикла*/
         if ((count + 1) % measAmount == 0) {

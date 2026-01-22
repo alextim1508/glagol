@@ -9,6 +9,8 @@ import com.alextim.glagol.frontend.view.data.DataController;
 import com.alextim.glagol.frontend.view.magazine.MagazineController;
 import com.alextim.glagol.frontend.view.management.ManagementController;
 import com.alextim.glagol.frontend.view.metrology.MetrologyController;
+import com.alextim.glagol.service.BackgroundMeasService;
+import com.alextim.glagol.service.BackgroundMeasService.BackgroundMeasurement;
 import com.alextim.glagol.service.ExportService;
 import com.alextim.glagol.service.MetrologyMeasService;
 import com.alextim.glagol.service.MetrologyMeasService.MetrologyMeasurement;
@@ -24,6 +26,9 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Alert;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -48,9 +53,16 @@ public class RootController extends RootControllerInitializer {
                           MessageReceiver transfer,
                           StatisticMeasService statisticMeasService,
                           MetrologyMeasService metrologyMeasService,
+                          BackgroundMeasService backgroundMeasService,
                           ExportService exportService,
                           AppState appState) {
-        super(mainWindow, transfer, statisticMeasService, metrologyMeasService, exportService, appState);
+        super(  mainWindow,
+                transfer,
+                statisticMeasService,
+                metrologyMeasService,
+                backgroundMeasService,
+                exportService,
+                appState);
     }
 
     public void listenDetectorClient() {
@@ -147,6 +159,20 @@ public class RootController extends RootControllerInitializer {
 
                 if (!metrologyMeasService.isRun()) {
                     sendDetectorCommand(new StopMeasureCommand());
+
+                    metrologyController.enableAllBtn();
+                }
+            }
+
+            Optional<BackgroundMeasurement> backgroundMeasurement = backgroundMeasService.addMeasToMetrology(measurementDoseRate);
+            if (backgroundMeasurement.isPresent()) {
+                MetrologyController metrologyController = getMetrologyController();
+                metrologyController.showBackground(backgroundMeasurement.get());
+
+                if (!backgroundMeasService.isRun()) {
+                    sendDetectorCommand(new StopMeasureCommand());
+
+                    metrologyController.enableAllBtn();
                 }
             }
         }
@@ -207,11 +233,22 @@ public class RootController extends RootControllerInitializer {
         dataController.enableStartStopBtn(true);
     }
 
-    public void startMetrology(int cycleAmount, int measAmount, float realMeasData) {
-        sendDetectorCommand(Arrays.asList(new SetParamCommand(BD_BG_CURRENT_RANGE, 0),
+    public void startMetrology(int cycleAmount, int measAmount, float realMeasData, float background, int range) {
+        sendDetectorCommand(Arrays.asList(new SetParamCommand(BD_BG_CURRENT_RANGE, range),
                 new StartMeasureCommand()));
 
-        metrologyMeasService.run(cycleAmount, measAmount, realMeasData);
+        metrologyMeasService.run(cycleAmount, measAmount, realMeasData, background);
+    }
+
+    public void startBackground(int measTime, int range) {
+        sendDetectorCommand(Arrays.asList(new SetParamCommand(BD_BG_CURRENT_RANGE, range),
+                new StartMeasureCommand()));
+
+        backgroundMeasService.run(measTime);
+    }
+
+    public void stopBackground() {
+        sendDetectorCommand(new StopMeasureCommand());
     }
 
     public void clear() {
@@ -222,7 +259,12 @@ public class RootController extends RootControllerInitializer {
         dataController.clearGraphAndTableData();
     }
 
+    private final KeyCombination ctrlQ = new KeyCodeCombination(KeyCode.Q, KeyCodeCombination.CONTROL_DOWN);
+
     public void onKeyEvent(KeyEvent event) {
+        if(ctrlQ.match(event)) {
+            log.info("Ctrl + Q");
+        }
     }
 
     public void close() {
@@ -278,7 +320,7 @@ public class RootController extends RootControllerInitializer {
                 Platform.runLater(() -> {
                     progressDialog.forcefullyHideDialog();
 
-                    mainWindow.showError(e);
+                    mainWindow.showError(Thread.currentThread(), e);
                 });
             }
         });

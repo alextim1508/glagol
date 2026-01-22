@@ -10,6 +10,7 @@ import com.alextim.glagol.frontend.view.data.DataController;
 import com.alextim.glagol.frontend.view.magazine.MagazineController;
 import com.alextim.glagol.frontend.view.management.ManagementController;
 import com.alextim.glagol.frontend.view.metrology.MetrologyController;
+import com.alextim.glagol.service.BackgroundMeasService;
 import com.alextim.glagol.service.ExportService;
 import com.alextim.glagol.service.MetrologyMeasService;
 import com.alextim.glagol.service.StatisticMeasService;
@@ -39,6 +40,8 @@ public class RootControllerInitializer {
     protected final StatisticMeasService statisticMeasService;
 
     protected final MetrologyMeasService metrologyMeasService;
+
+    protected final BackgroundMeasService backgroundMeasService;
 
     protected final ExportService exportService;
 
