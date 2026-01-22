@@ -101,7 +101,7 @@ public class MainWindow {
         return pane;
     }
 
-    public void showError(Throwable throwable) {
+    public void showError(Thread thread, Throwable throwable) {
         log.error("", throwable);
 
         StringWriter sw = new StringWriter();

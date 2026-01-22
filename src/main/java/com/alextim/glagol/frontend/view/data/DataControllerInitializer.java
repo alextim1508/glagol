@@ -32,6 +32,9 @@ import java.util.ResourceBundle;
 
 import static com.alextim.glagol.context.Property.AVERAGE_COUNTER_NUMBER_FORMAT;
 import static com.alextim.glagol.frontend.MainWindow.PROGRESS_BAR_COLOR;
+import static com.alextim.glagol.frontend.view.management.ManagementControllerInitializer.ERROR_PARSE_FILED;
+import static com.alextim.glagol.frontend.view.management.ManagementControllerInitializer.ERROR_PARSE_TITLE;
+import static javafx.scene.control.Alert.AlertType.ERROR;
 
 @Slf4j
 public abstract class DataControllerInitializer extends NodeController {
@@ -104,6 +107,9 @@ public abstract class DataControllerInitializer extends NodeController {
                                                                         AVERAGE_COUNTER_NUMBER_FORMAT + " " +
                                                                         AVERAGE_COUNTER_NUMBER_FORMAT + " " +
                                                                         AVERAGE_COUNTER_NUMBER_FORMAT;
+
+    public static final String ERROR_PARSE_FILED = "Ошибка обработки поля %s";
+    public static final String ERROR_PARSE_TITLE = "Ошибка преобразования текста в число";
 
     int graphIndex;
 
@@ -356,7 +362,18 @@ public abstract class DataControllerInitializer extends NodeController {
 
     @FXML
     void onConnectToDetector(ActionEvent event) {
-        start(getMeasTime(), getInputRange().getCode());
+        int measTime;
+
+        try {
+            measTime = getMeasTime();
+        } catch (RuntimeException e) {
+            rootController.getMainWindow().showDialog(ERROR, "Ошибка",
+                    String.format(ERROR_PARSE_FILED, "Экспозиция"),
+                    ERROR_PARSE_TITLE);
+            return;
+        }
+
+        start(measTime, getInputRange().getCode());
     }
 
     @FXML

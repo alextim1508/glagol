@@ -53,8 +53,10 @@ public class Main extends Application {
                 AnchorPane mainWindowPane = mainWindow.createMainWindow(finalRootController);
                 startController.addLog("OK");
 
+
                 initStage(stage,
                         mainWindowPane,
+                        mainWindow::showError,
                         mainWindow.getIconImage(),
                         finalRootController);
             });
@@ -72,6 +74,7 @@ public class Main extends Application {
 
     private void initStage(Stage stage,
                            AnchorPane rootPane,
+                           Thread.UncaughtExceptionHandler exceptionHandler,
                            Image icon,
                            RootController rootController) {
         stage.hide();
@@ -83,6 +86,8 @@ public class Main extends Application {
         stage.setScene(scene);
         stage.setTitle(TITLE_APP);
         stage.getIcons().add(icon);
+
+        Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
 
         stage.setOnShowing(event -> {
             log.info("showing callback");
