@@ -5,19 +5,20 @@ import com.alextim.glagol.client.MessageReceiver;
 import com.alextim.glagol.context.AppState;
 import com.alextim.glagol.frontend.MainWindow;
 import com.alextim.glagol.frontend.dialog.progress.ProgressDialog;
+import com.alextim.glagol.frontend.view.coefs.CoefsController;
 import com.alextim.glagol.frontend.view.data.DataController;
 import com.alextim.glagol.frontend.view.magazine.MagazineController;
 import com.alextim.glagol.frontend.view.management.ManagementController;
 import com.alextim.glagol.frontend.view.metrology.MetrologyController;
-import com.alextim.glagol.service.BackgroundMeasService;
+import com.alextim.glagol.service.*;
 import com.alextim.glagol.service.BackgroundMeasService.BackgroundMeasurement;
-import com.alextim.glagol.service.ExportService;
-import com.alextim.glagol.service.MetrologyMeasService;
+import com.alextim.glagol.service.CoefService.CoefsMeasurement;
 import com.alextim.glagol.service.MetrologyMeasService.MetrologyMeasurement;
-import com.alextim.glagol.service.StatisticMeasService;
 import com.alextim.glagol.service.StatisticMeasService.StatisticMeasurement;
 import com.alextim.glagol.service.message.CommandMessages.*;
+import com.alextim.glagol.service.message.MeasurementMessages;
 import com.alextim.glagol.service.message.MeasurementMessages.MeasEvent;
+import com.alextim.glagol.service.message.MeasurementMessages.MeasurementCounts;
 import com.alextim.glagol.service.message.MeasurementMessages.MeasurementDoseRate;
 import com.alextim.glagol.service.protocol.Parameter;
 import javafx.application.Platform;
@@ -54,6 +55,7 @@ public class RootController extends RootControllerInitializer {
                           StatisticMeasService statisticMeasService,
                           MetrologyMeasService metrologyMeasService,
                           BackgroundMeasService backgroundMeasService,
+                          CoefService coefService,
                           ExportService exportService,
                           AppState appState) {
         super(  mainWindow,
@@ -61,6 +63,7 @@ public class RootController extends RootControllerInitializer {
                 statisticMeasService,
                 metrologyMeasService,
                 backgroundMeasService,
+                coefService,
                 exportService,
                 appState);
     }
@@ -176,6 +179,21 @@ public class RootController extends RootControllerInitializer {
                 }
             }
         }
+
+        if(measEvent instanceof MeasurementCounts measurementCounts) {
+            Optional<CoefsMeasurement> coefMeasurement = coefService.handle(measurementCounts);
+
+            if (coefMeasurement.isPresent()) {
+                CoefsController coefsController = getCoefsController();
+                coefsController.showCoefMeas(coefMeasurement.get());
+
+                if (!coefService.isRun()) {
+                    sendDetectorCommand(new StopMeasureCommand());
+
+                    coefsController.enableStartStopBtn(true);
+                }
+            }
+        }
     }
 
     public void sendDetectorCommand(List<? extends CommandMessage> command) {
@@ -251,6 +269,17 @@ public class RootController extends RootControllerInitializer {
         sendDetectorCommand(new StopMeasureCommand());
     }
 
+    public void startCoefCalculated(int measTime, float realMeasData, int range) {
+        sendDetectorCommand(Arrays.asList(new SetParamCommand(BD_BG_CURRENT_RANGE, range),
+                new StartMeasureCommand()));
+
+        coefService.run(measTime, range, realMeasData);
+    }
+
+    public void stopCoefCalculated() {
+        sendDetectorCommand(new StopMeasureCommand());
+    }
+
     public void clear() {
         statisticMsg.clear();
         statisticMeasService.clear();
@@ -271,6 +300,7 @@ public class RootController extends RootControllerInitializer {
         try {
             getDataController().putStateParam();
             getMetrologyController().putStateParam();
+            getCoefsController().putStateParam();
             appState.saveParam();
         } catch (Exception e) {
             log.error("SaveParams error", e);

@@ -3,6 +3,7 @@ package com.alextim.glagol.frontend;
 import com.alextim.glagol.RootController;
 import com.alextim.glagol.frontend.dialog.error.ErrorDialog;
 import com.alextim.glagol.frontend.dialog.progress.ProgressDialog;
+import com.alextim.glagol.frontend.view.coefs.CoefsView;
 import com.alextim.glagol.frontend.view.data.DataView;
 import com.alextim.glagol.frontend.view.magazine.MagazineView;
 import com.alextim.glagol.frontend.view.management.ManagementView;
@@ -75,6 +76,7 @@ public class MainWindow {
         TabPane tabPane = new TabPane(
                 new Tab("Данные", new DataView().getView(bundle)),
                 new Tab("Метрология", new MetrologyView().getView(bundle)),
+                new Tab("Коэффициенты", new CoefsView().getView(bundle)),
                 new Tab("Журнал", new MagazineView().getView(bundle)),
                 new Tab("Параметры", new ManagementView().getView(bundle))
         );

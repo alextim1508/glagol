@@ -2,18 +2,15 @@ package com.alextim.glagol;
 
 
 import com.alextim.glagol.client.MessageReceiver;
-import com.alextim.glagol.client.SomeMessage;
 import com.alextim.glagol.context.AppState;
 import com.alextim.glagol.frontend.MainWindow;
 import com.alextim.glagol.frontend.view.NodeController;
+import com.alextim.glagol.frontend.view.coefs.CoefsController;
 import com.alextim.glagol.frontend.view.data.DataController;
 import com.alextim.glagol.frontend.view.magazine.MagazineController;
 import com.alextim.glagol.frontend.view.management.ManagementController;
 import com.alextim.glagol.frontend.view.metrology.MetrologyController;
-import com.alextim.glagol.service.BackgroundMeasService;
-import com.alextim.glagol.service.ExportService;
-import com.alextim.glagol.service.MetrologyMeasService;
-import com.alextim.glagol.service.StatisticMeasService;
+import com.alextim.glagol.service.*;
 import com.alextim.glagol.service.StatisticMeasService.StatisticMeasurement;
 import com.alextim.glagol.service.message.CommandMessages.CommandMessage;
 import lombok.Getter;
@@ -42,6 +39,8 @@ public class RootControllerInitializer {
     protected final MetrologyMeasService metrologyMeasService;
 
     protected final BackgroundMeasService backgroundMeasService;
+
+    protected final CoefService coefService;
 
     protected final ExportService exportService;
 
@@ -85,4 +84,9 @@ public class RootControllerInitializer {
     protected MetrologyController getMetrologyController() {
         return (MetrologyController) getChild(MetrologyController.class.getSimpleName());
     }
+
+    protected CoefsController getCoefsController() {
+        return (CoefsController) getChild(CoefsController.class.getSimpleName());
+    }
+
 }

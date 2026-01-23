@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="pane" prefHeight="484.0" prefWidth="787.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.alextim.glagol.frontend.view.coefs.CoefsController">
+   <children>
+      <HBox layoutX="22.0" layoutY="56.0" prefHeight="25.0" prefWidth="172.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="50.0">
+         <children>
+            <Label layoutX="113.0" layoutY="460.0" prefHeight="24.0" prefWidth="70.0" text="Диапазон:" />
+            <ComboBox fx:id="inputRange" layoutX="191.0" layoutY="456.0" prefHeight="25.0" prefWidth="90.0" />
+         </children>
+      </HBox>
+      <VBox layoutX="229.0" layoutY="32.0" prefHeight="322.0" prefWidth="442.0" spacing="10.0" style="-fx-border-color: black;" AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="10.0">
+         <children>
+            <HBox layoutX="31.0" layoutY="103.0" prefHeight="25.0" prefWidth="430.0" spacing="10.0">
+               <children>
+                  <Label layoutX="569.0" layoutY="113.0" prefHeight="25.0" prefWidth="187.0" text="Действительная мощность дозы:" />
+                  <TextField fx:id="realMeasData" layoutX="787.0" layoutY="109.0" prefHeight="25.0" prefWidth="130.0" />
+                  <ComboBox fx:id="realMeasDataUnit" prefHeight="25.0" prefWidth="90.0" />
+               </children>
+            </HBox>
+            <HBox>
+               <children>
+                  <Label layoutX="106.0" layoutY="361.0" prefHeight="25.0" prefWidth="197.0" text="Экспозиция, сек:" />
+                  <TextField fx:id="measTime" layoutX="106.0" layoutY="361.0" prefHeight="25.0" prefWidth="132.0" />
+               </children>
+            </HBox>
+            <StackPane prefHeight="34.0" prefWidth="430.0">
+               <children>
+                  <ProgressBar fx:id="progressBar" layoutX="488.0" layoutY="438.0" prefHeight="23.0" prefWidth="369.0" progress="0.0" />
+                  <Label fx:id="progressLabel" layoutX="587.0" layoutY="413.0" text="-" />
+               </children>
+            </StackPane>
+            <TableView fx:id="table" prefHeight="152.0" prefWidth="371.0">
+              <columns>
+                <TableColumn fx:id="countTitle" prefWidth="100.0" text="Счетчик" />
+                <TableColumn fx:id="calculatedCount" prefWidth="100.0" text="Расчитанный" />
+                  <TableColumn fx:id="averageCount" prefWidth="100.0" text="Средний" />
+                  <TableColumn fx:id="currentCount" prefWidth="100.0" text="Текущий" />
+              </columns>
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+            </TableView>
+            <HBox spacing="10.0">
+               <children>
+                  <Button fx:id="startCoefCalc" mnemonicParsing="false" onAction="#startCoefCalcOn" text="Рассчитать коэффициенты" />
+                  <Button fx:id="stopCoefCalc" disable="true" mnemonicParsing="false" onAction="#stopCoefCalcOn" text="Остановить" />
+                  <Button mnemonicParsing="false" onAction="#setCoefOn" prefWidth="75.0" text="Задать" />
+               </children>
+            </HBox>
+         </children>
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </padding>
+      </VBox>
+   </children>
+</AnchorPane>
