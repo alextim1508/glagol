@@ -36,6 +36,8 @@ Desktop приложение для управления детектором р
 
 ![2.jpg](screenshots/2.jpg)
 
+![5.jpg](screenshots/5.jpg)
+
 ![3.jpg](screenshots/3.jpg)
 
 ![4.jpg](screenshots/4.jpg)
